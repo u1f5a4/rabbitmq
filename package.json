@@ -1,0 +1,23 @@
+{
+  "name": "rabbitmq",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "up": "docker-compose up -d --build",
+    "down": "docker-compose down",
+    "restart": "npm run down && npm run up && npm run remove-none",
+    "remove-none": "docker rmi $(docker images | grep '^<none>' | awk '{print $3}')"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/u1f5a4/rabbitmq.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/u1f5a4/rabbitmq/issues"
+  },
+  "homepage": "https://github.com/u1f5a4/rabbitmq#readme"
+}

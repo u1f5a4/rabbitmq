@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    container_name: RabbitMQ
+    image: rabbitmq:3-management-alpine
+    ports:
+      - ${RABBITMQ_PORT}:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_logs:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - net
+
+  publisher:
+    container_name: Publisher
+    depends_on:
+      - rabbitmq
+    build:
+      context: ./publisher
+      dockerfile: Publisher.Dockerfile
+    volumes:
+      - ./publisher/src:/app/src
+    environment:
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:${RABBITMQ_PORT}
+    ports:
+      - 3000:3000
+    networks:
+      - net
+
+  consumer:
+    container_name: Consumer
+    depends_on:
+      - rabbitmq
+    build:
+      context: ./consumer
+      dockerfile: Consumer.Dockerfile
+    volumes:
+      - ./consumer/src:/app/src
+    environment:
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:${RABBITMQ_PORT}
+    ports:
+      - 4000:3000
+    networks:
+      - net
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_logs:
+
+networks:
+  net:
+    driver: bridge
